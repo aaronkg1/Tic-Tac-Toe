@@ -63,7 +63,7 @@ table {
     justify-content: center;
     align-items: center;
     z-index: 10;
-    background-color: bisque;
+    background-color: beige;
 }
 
 .gameover p {
@@ -77,10 +77,11 @@ h1 {
 .header {
     grid-column: 1 / 13;
     grid-row: 1 / 3;
-    background-color: aqua;
+    background-color: beige;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: 'Shizuru', cursive;
 
 }
 
@@ -95,12 +96,12 @@ h1 {
 }
 
 #game-container {
-    grid-column: 4 / 13;
+    grid-column: 4 / 10;
     grid-row: 3 / 13;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 50px;
+    padding: 20px;
 }
 
 #player-display {
@@ -118,7 +119,7 @@ h1 {
 #game-grid {
     width: 100%;
     height: 100%;
-    background-color: lightgoldenrodyellow;
+    background-color: beige;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
@@ -142,7 +143,15 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 10rem;
+    font-size: 8rem;
+}
+
+.empty.player-one:hover {
+background-color: rgba(255, 47, 47, 0.475);
+}
+
+.empty.player-two:hover{
+background-color: rgba(47, 106, 255, 0.475);
 }
 
 .block span {
@@ -166,7 +175,19 @@ border: 2px solid black;
     z-index: -2;
 }
 
-.active {
-    background-color: greenyellow;
+.active-one {
+    background-color: rgba(255, 47, 47, 0.475);
     color: white;
+}
+
+.active-two {
+    background-color: rgba(47, 106, 255, 0.475);
+    color: white;
+}
+
+
+
+button {
+    padding: 10px 30px 10px 30px;
+    font-size: 20px;
 }

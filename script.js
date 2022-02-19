@@ -122,6 +122,7 @@ const displayController = (() => {
             blockListener();
             deletePlayerDisplay();
             displayPlayers();
+            blockHightlight();
             
         }
 
@@ -134,6 +135,7 @@ const displayController = (() => {
             blockListener();
             deletePlayerDisplay();
             displayPlayers();
+            blockHightlight();
 
         }
 
@@ -159,6 +161,7 @@ const displayController = (() => {
             for (let j = 0; j <= 2; j++) {
                 const block = document.createElement('div');
                 block.classList.add('block');
+                block.classList.add('empty');
                 gameContainer.appendChild(block);
                 block.value = [i, j];
                 const symbol = document.createElement('span');
@@ -222,8 +225,10 @@ const displayController = (() => {
                 symbol.textContent = "radio_button_unchecked";
             }
 
-            else return
         })
+
+        blockHightlight();
+        
 
     }
     const blockListener = () => {
@@ -235,16 +240,35 @@ const displayController = (() => {
 
     }
 
+    const blockHightlight = () => {
+        const blocks = document.querySelectorAll(".block");
+        blocks.forEach(block => {
+            if (GameController.getActivePlayer().getName() === "Player One") {
+                block.classList.remove('player-two');
+                block.classList.remove('player-one');
+                block.classList.add('player-one');
+            }
+            
+           else {
+               block.classList.remove('player-one');
+               block.classList.remove('player-two');
+               block.classList.add('player-two');
+           }
+        })
+    }
+
     const blockMove = (event) => {
         let activeSymbol = GameController.getActivePlayer().getSymbol();
         Gameboard.move(event.target.value, activeSymbol);
         event.target.value = activeSymbol;
+        event.target.classList.remove('empty');
         GameController.changeActivePlayer();
         GameController.setInactivePlayer();
         updateGrid();
         showActivePlayer();
         GameController.checkForWinner();
         event.target.removeEventListener('click', blockMove);
+        
     }
 
     const showActivePlayer = () => {
@@ -255,11 +279,13 @@ const displayController = (() => {
            if (player.getName() === activePlayer) {
                const players = document.querySelectorAll('.player')
                players.forEach(player => {
-                   if (player.value === activePlayer) {
-                       player.classList.add('active');
+                player.classList.remove('active-two');
+                player.classList.remove('active-one');
+                   if (player.value === activePlayer && activePlayer === "Player One") {
+                       player.classList.add('active-one');
                    }
-                   if (player.value === inactivePlayer) {
-                    player.classList.remove('active');
+                   if (player.value === activePlayer && activePlayer === "Player Two") {
+                    player.classList.add('active-two');  
                    }
                })
            }
@@ -268,8 +294,11 @@ const displayController = (() => {
 
     const gameOverScreen = (player) => {
         const gameOver = document.querySelector('.gameover');
+        const gameOverTitle = document.createElement('h1');
         const playerWins = document.createElement('p');
+        gameOverTitle.textContent = "Game Over!";
         playerWins.textContent = `${player} wins!`
+        gameOver.appendChild(gameOverTitle);
         gameOver.appendChild(playerWins);
         gameOver.classList.remove('hidden');
     }
