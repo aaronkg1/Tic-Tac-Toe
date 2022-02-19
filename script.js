@@ -141,6 +141,8 @@ const displayController = (() => {
 
         playerOneX.addEventListener('click', createPlayerX);
         playerOneO.addEventListener('click', createPlayerO);
+        playerOneO.addEventListener('click', showActivePlayer);
+        playerOneO.addEventListener('click', showActivePlayer);
         playerOneX.addEventListener('click', () => {
             playerOneX.removeEventListener('click', createPlayerX)
             playerOneO.removeEventListener('click', createPlayerO)
@@ -149,6 +151,8 @@ const displayController = (() => {
             playerOneX.removeEventListener('click', createPlayerX)
             playerOneO.removeEventListener('click', createPlayerO)
         })
+        
+        
 
 
         updateGrid();
@@ -200,10 +204,12 @@ const displayController = (() => {
             
             if (player === GameController.getActivePlayer()) {
                 playerContainer.classList.add("active")
-            }
+                playerContainer.classList.add('active-one')
+            }  
 
         });
 
+        
 
     }
 
@@ -227,7 +233,7 @@ const displayController = (() => {
 
         })
 
-        blockHightlight();
+       
         
 
     }
@@ -236,6 +242,7 @@ const displayController = (() => {
         const blocks = document.querySelectorAll(".block")
         blocks.forEach(block => {
             block.addEventListener('click', blockMove)
+            block.addEventListener('click', blockHightlight)
         })
 
     }
@@ -275,7 +282,6 @@ const displayController = (() => {
 
        GameController.getPlayers().forEach(player => {
         let activePlayer = GameController.getActivePlayer().getName();
-        let inactivePlayer = GameController.getInactivePlayer().getName();
            if (player.getName() === activePlayer) {
                const players = document.querySelectorAll('.player')
                players.forEach(player => {
