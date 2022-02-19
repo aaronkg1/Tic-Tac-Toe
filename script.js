@@ -16,58 +16,49 @@ const Gameboard = (() => {
 
 })();
 
-const GameController = (() => {
-
+const GameController = (() => { 
     let players = []
     let activePlayer;
-
+    let inactivePlayer;
     const createPlayer = (name, symbol, active) => {
         players.push(Player(name, symbol, active));
 
     }
-
     const removePlayers = () => {
         players.splice(0, 2);
     }
-
     const getPlayers = () => players;
-
 
     const checkForWinner = () => {
         let gameboard = Gameboard.getBoard();
         for (let i = 0; i <= 2; i++) {
             if (gameboard[0][i] == gameboard[1][i] && gameboard[1][i] == gameboard[2][i]) { //check vertical
-                return gameOver();
+                gameOver(gameboard[0][i]);
             }
             if (gameboard[i][0] === gameboard[i][1] && gameboard[i][1] === gameboard[i][2]) { //check horizontal
-                return gameOver();
+                gameOver(gameboard[i][0]);
             }
 
             if (gameboard[0][0] === gameboard[1][1] && gameboard[1][1] === gameboard[2][2]) { //check diaganol
-                return gameOver();
+                gameOver(gameboard[0][0]);
             }
             if (gameboard[0][2] === gameboard[1][1] && gameboard[1][1] === gameboard[2][0]) { //check diaganol
-                return gameOver();
+                gameOver(gameboard[0][2]);
             }
-
         }
-
     }
-
     const setActivePlayer = (index) => {
         activePlayer = players[index];
     }
-
     const getActivePlayer = () => activePlayer;
-
-    const playRound = (symbol, coordinates) => {
-        if (activePlayer.getSymbol() = "x") {
-            Gameboard.move(coordinates, "x")
-
-
-        }
-
+    const setInactivePlayer = () => {
+        players.forEach(player => {
+            if (player.getName() != getActivePlayer().getName()) {
+                inactivePlayer = player;
+            }
+        })
     }
+    const getInactivePlayer = () => inactivePlayer;
 
     const changeActivePlayer = () => {
         if (players.indexOf(activePlayer) === 0) {
@@ -78,15 +69,15 @@ const GameController = (() => {
             setActivePlayer(0);
         }
     }
-
-    const gameOver = () => {
-        console.log("Game Over");
+    const gameOver = (symbol) => {
+        players.forEach(player => {
+            if (player.getSymbol() === symbol) {
+                displayController.gameOverScreen(player.getName())
+            }
+        })
         displayController.buttonInit();
     }
-
-
-    return { checkForWinner, createPlayer, getPlayers, removePlayers, setActivePlayer, getActivePlayer, changeActivePlayer }
-
+    return { checkForWinner, createPlayer, getPlayers, removePlayers, setActivePlayer, getActivePlayer, setInactivePlayer, getInactivePlayer, changeActivePlayer }
 })();
 
 const Player = (name, symbol) => {
@@ -187,9 +178,26 @@ const displayController = (() => {
     const displayPlayers = () => {
         GameController.getPlayers().forEach((player) => {
             const playerContainer = document.createElement('div');
+        
+            playerContainer.classList.add('player');
+            playerContainer.value = player.getName();
             const playerDisplay = document.querySelector("#player-display");
-            playerContainer.textContent = `${player.getName()} : ${player.getSymbol()}`;
+            const displaySymbol = document.createElement('span');
+            displaySymbol.classList.add('material-icons-outlined')
+            if (player.getSymbol() === "x") {
+                displaySymbol.textContent = "close";
+            }
+            else if (player.getSymbol() === "o") {
+                displaySymbol.textContent = "radio_button_unchecked"
+            }
+            
+            playerContainer.textContent = `${player.getName()} : `;
+            playerContainer.appendChild(displaySymbol);
             playerDisplay.appendChild(playerContainer);
+            
+            if (player === GameController.getActivePlayer()) {
+                playerContainer.classList.add("active")
+            }
 
         });
 
@@ -232,12 +240,41 @@ const displayController = (() => {
         Gameboard.move(event.target.value, activeSymbol);
         event.target.value = activeSymbol;
         GameController.changeActivePlayer();
+        GameController.setInactivePlayer();
         updateGrid();
+        showActivePlayer();
         GameController.checkForWinner();
         event.target.removeEventListener('click', blockMove);
     }
 
-    return { createGrid, deleteGrid, buttonInit, displayPlayers, deletePlayerDisplay, updateGrid }
+    const showActivePlayer = () => {
+
+       GameController.getPlayers().forEach(player => {
+        let activePlayer = GameController.getActivePlayer().getName();
+        let inactivePlayer = GameController.getInactivePlayer().getName();
+           if (player.getName() === activePlayer) {
+               const players = document.querySelectorAll('.player')
+               players.forEach(player => {
+                   if (player.value === activePlayer) {
+                       player.classList.add('active');
+                   }
+                   if (player.value === inactivePlayer) {
+                    player.classList.remove('active');
+                   }
+               })
+           }
+       })
+    }
+
+    const gameOverScreen = (player) => {
+        const gameOver = document.querySelector('.gameover');
+        const playerWins = document.createElement('p');
+        playerWins.textContent = `${player} wins!`
+        gameOver.appendChild(playerWins);
+        gameOver.classList.remove('hidden');
+    }
+
+    return { createGrid, deleteGrid, buttonInit, displayPlayers, deletePlayerDisplay, updateGrid, gameOverScreen }
 })();
 
 displayController.buttonInit();
