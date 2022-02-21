@@ -20,18 +20,36 @@
         <div class="controls">
             <button id="new-game">New Game</button>
         </div>
+        <div class="versus-computer hidden">
+            <div class="center">
+                <label for="player-one-name">Player One: </label>
+                <input id="one-player-name" type="text">
+            </div>
+            <div class="center">
+                <label for="random">Difficulty</label>
+                <button id="random">Random</button>
+            </div>
+            <div class="center">
+                <button id="play-comp">Let's Play!</button>
+            </div>
+        </div>
+        <div class="player-or-computer hidden">
+            <p>Who do you want to play against?</p>
+            <button id="vs-player-btn">Another Player</button>
+            <button id="vs-computer-btn">Computer</button>
+        </div>
         <div class="player-input hidden">
-                <div class="center">
+            <div class="center">
                 <label for="player-one-name">Player One: </label>
                 <input id="player-one-name" type="text">
-                </div>
-                <div class="center">
+            </div>
+            <div class="center">
                 <label for="player-two-name">Player Two: </label>
                 <input id = "player-two-name" type="text">
-                </div>
-                <div class="center">
+            </div>
+            <div class="center">
                 <button id="play">Let's Play!</button>
-                 </div>        
+            </div>        
         </div>
         <div id="player-display">
         </div>

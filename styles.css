@@ -199,6 +199,24 @@ button {
 }
 
 .player-input {
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 3em;
+    gap: 40px;
+    grid-column: 4 / 13;
+    grid-row: 3 / 13;
+    z-index: 5;
+    background-color: var(--main-color);
+    font-family: 'Gideon Roman', cursive;
+    
+}
+
+
+.versus-computer {
+    
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -227,6 +245,20 @@ button {
     max-width: 200px;
     font-family: 'Gideon Roman', cursive;
     
+}
+
+.player-or-computer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 3em;
+    gap: 40px;
+    grid-column: 4 / 13;
+    grid-row: 3 / 13;
+    z-index: 5;
+    background-color: var(--main-color);
+    font-family: 'Gideon Roman', cursive;
 }
 
 .center {
