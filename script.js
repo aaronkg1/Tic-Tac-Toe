@@ -1,5 +1,6 @@
 const Gameboard = (() => {
     let gameboard = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+    let moves = 0;
 
     const getBoard = () => {
         return gameboard
@@ -7,21 +8,28 @@ const Gameboard = (() => {
 
     const move = ([x, y], symbol) => {
         gameboard[x][y] = symbol;
+        moves++;
+    }
+
+    const getMoves = () => {
+        return moves;
     }
     const clear = () => {
         gameboard.splice(0, 3);
         gameboard.push([1, 2, 3], [4, 5, 6], [7, 8, 9]);
+        moves = 0;
     }
-    return { getBoard, move, clear }
+    return { getBoard, move, clear, getMoves }
 
 })();
 
-const GameController = (() => { 
+const GameController = (() => {
     let players = []
     let activePlayer;
     let inactivePlayer;
-    const createPlayer = (name, symbol, active) => {
-        players.push(Player(name, symbol, active));
+    let winnerFound = false;
+    const createPlayer = (name, symbol) => {
+        players.push(Player(name, symbol));
 
     }
     const removePlayers = () => {
@@ -34,17 +42,24 @@ const GameController = (() => {
         for (let i = 0; i <= 2; i++) {
             if (gameboard[0][i] == gameboard[1][i] && gameboard[1][i] == gameboard[2][i]) { //check vertical
                 gameOver(gameboard[0][i]);
+                winnerFound = true;
             }
             if (gameboard[i][0] === gameboard[i][1] && gameboard[i][1] === gameboard[i][2]) { //check horizontal
                 gameOver(gameboard[i][0]);
+                winnerFound = true;
             }
-
             if (gameboard[0][0] === gameboard[1][1] && gameboard[1][1] === gameboard[2][2]) { //check diaganol
                 gameOver(gameboard[0][0]);
+                winnerFound = true;
             }
             if (gameboard[0][2] === gameboard[1][1] && gameboard[1][1] === gameboard[2][0]) { //check diaganol
                 gameOver(gameboard[0][2]);
+                winnerFound = true;
             }
+
+        }
+        if (winnerFound === false && Gameboard.getMoves() === 9) {
+            gameOver('draw');
         }
     }
     const setActivePlayer = (index) => {
@@ -59,12 +74,10 @@ const GameController = (() => {
         })
     }
     const getInactivePlayer = () => inactivePlayer;
-
     const changeActivePlayer = () => {
         if (players.indexOf(activePlayer) === 0) {
             setActivePlayer(1);
         }
-
         else if (players.indexOf(activePlayer) === 1) {
             setActivePlayer(0);
         }
@@ -72,15 +85,22 @@ const GameController = (() => {
     const gameOver = (symbol) => {
         players.forEach(player => {
             if (player.getSymbol() === symbol) {
-                displayController.gameOverScreen(player.getName())
+                displayController.gameOverScreen(`${player.getName()} wins!`)
+            }
+            else if (symbol === "draw") {
+                displayController.gameOverScreen('Draw!');
             }
         })
-        displayController.buttonInit();
     }
-    return { checkForWinner, createPlayer, getPlayers, removePlayers, setActivePlayer, getActivePlayer, setInactivePlayer, getInactivePlayer, changeActivePlayer }
+    const resetWinnerFound = () => {
+        if (winnerFound === true) {
+            winnerFound = false;
+        }
+    }
+    return { checkForWinner, createPlayer, getPlayers, removePlayers, setActivePlayer, getActivePlayer, setInactivePlayer, getInactivePlayer, changeActivePlayer, resetWinnerFound }
 })();
 
-const Player = (name, symbol) => {
+const Player = (name, symbol) => { // player contructor
     const getName = () => name;
     const setSymbol = (symbol) => this.symbol = symbol;
     const getSymbol = () => symbol;
@@ -93,67 +113,50 @@ const Player = (name, symbol) => {
 
 const displayController = (() => {
 
+    const playerInput = document.querySelector(".player-input");
+    const playerOneX = document.querySelector("#player-one-name");
+    const playerTwoO = document.querySelector("#player-two-name");
+    const playButton = document.querySelector('#play');
+    const newGameBtn = document.querySelector("#new-game");
+    const controls = document.querySelector(".controls")
     const buttonInit = () => {
 
-        const newGameBtn = document.createElement("button");
-        newGameBtn.textContent = "New Game";
-        newGameBtn.setAttribute("id", "new-game");
-        document.querySelector(".controls").appendChild(newGameBtn);
+        
+        newGameBtn.addEventListener('click', () => {
+            newGameBtn.classList.add('hidden');
+        })
         newGameBtn.addEventListener("click", Gameboard.clear());
-        newGameBtn.addEventListener("click", displayController.deleteGrid());
-        newGameBtn.addEventListener("click", displayController.createGrid());
+        newGameBtn.addEventListener("click", deleteGrid());
+        newGameBtn.addEventListener("click", createGrid());
         newGameBtn.addEventListener("click", GameController.removePlayers());
         newGameBtn.addEventListener("click", () => {
-            playerOneInput.classList.remove("hidden")
+            controls.classList.add("hidden");
+            playerInput.classList.remove("hidden");
         });
-        newGameBtn.addEventListener("click", () => {
-            newGameBtn.remove()
-        });
-        const playerOneInput = document.querySelector(".player-one-input");
-        const playerOneX = document.querySelector("#player-one-x");
-        const playerOneO = document.querySelector("#player-one-o");
+       
+      
 
-        const createPlayerX = () => {
-            GameController.removePlayers();
-            GameController.createPlayer('Player One', 'x');
-            GameController.createPlayer('Player Two', 'o');
-            GameController.setActivePlayer(0);
-            playerOneInput.classList.add('hidden');
-            blockListener();
-            deletePlayerDisplay();
-            displayPlayers();
-            blockHightlight();
-            
+        const createPlayer = () => {
+
+            if (playerOneX.value === playerTwoO.value) {
+                alert('Players must have different names');
+            }
+            else {
+
+                GameController.removePlayers();
+                GameController.createPlayer(playerOneX.value, 'x');
+                GameController.createPlayer(playerTwoO.value, 'o');
+                GameController.setActivePlayer(0);
+                playerInput.classList.add('hidden');
+                addBlockListener();
+                deletePlayerDisplay();
+                displayPlayers();
+                blockHightlight();
+                controls.classList.remove("hidden")
+            }
         }
-
-        const createPlayerO = () => {
-            GameController.removePlayers();
-            GameController.createPlayer('Player One', 'o');
-            GameController.createPlayer('Player Two', 'x');
-            GameController.setActivePlayer(0);
-            playerOneInput.classList.add('hidden');
-            blockListener();
-            deletePlayerDisplay();
-            displayPlayers();
-            blockHightlight();
-
-        }
-
-        playerOneX.addEventListener('click', createPlayerX);
-        playerOneO.addEventListener('click', createPlayerO);
-        playerOneO.addEventListener('click', showActivePlayer);
-        playerOneO.addEventListener('click', showActivePlayer);
-        playerOneX.addEventListener('click', () => {
-            playerOneX.removeEventListener('click', createPlayerX)
-            playerOneO.removeEventListener('click', createPlayerO)
-        });
-        playerOneO.addEventListener('click', () => {
-            playerOneX.removeEventListener('click', createPlayerX)
-            playerOneO.removeEventListener('click', createPlayerO)
-        })
-        
-        
-
+        playButton.addEventListener('click', createPlayer);
+        playButton.addEventListener('click', showActivePlayer);
 
         updateGrid();
     }
@@ -185,7 +188,7 @@ const displayController = (() => {
     const displayPlayers = () => {
         GameController.getPlayers().forEach((player) => {
             const playerContainer = document.createElement('div');
-        
+
             playerContainer.classList.add('player');
             playerContainer.value = player.getName();
             const playerDisplay = document.querySelector("#player-display");
@@ -197,19 +200,19 @@ const displayController = (() => {
             else if (player.getSymbol() === "o") {
                 displaySymbol.textContent = "radio_button_unchecked"
             }
-            
+
             playerContainer.textContent = `${player.getName()} : `;
             playerContainer.appendChild(displaySymbol);
             playerDisplay.appendChild(playerContainer);
-            
+
             if (player === GameController.getActivePlayer()) {
                 playerContainer.classList.add("active")
                 playerContainer.classList.add('active-one')
-            }  
+            }
 
         });
 
-        
+
 
     }
 
@@ -233,11 +236,11 @@ const displayController = (() => {
 
         })
 
-       
-        
+
+
 
     }
-    const blockListener = () => {
+    const addBlockListener = () => {
 
         const blocks = document.querySelectorAll(".block")
         blocks.forEach(block => {
@@ -247,20 +250,28 @@ const displayController = (() => {
 
     }
 
+    const removeBlockListener = () => {
+        const blocks = document.querySelectorAll(".block")
+        blocks.forEach(block => {
+            block.removeEventListener('click', blockMove)
+            block.removeEventListener('click', blockHightlight)
+        })
+    }
+
     const blockHightlight = () => {
         const blocks = document.querySelectorAll(".block");
         blocks.forEach(block => {
-            if (GameController.getActivePlayer().getName() === "Player One") {
+            if (GameController.getActivePlayer().getName() === GameController.getPlayers()[0].getName()) {
                 block.classList.remove('player-two');
                 block.classList.remove('player-one');
                 block.classList.add('player-one');
             }
-            
-           else {
-               block.classList.remove('player-one');
-               block.classList.remove('player-two');
-               block.classList.add('player-two');
-           }
+
+            else {
+                block.classList.remove('player-one');
+                block.classList.remove('player-two');
+                block.classList.add('player-two');
+            }
         })
     }
 
@@ -275,39 +286,64 @@ const displayController = (() => {
         showActivePlayer();
         GameController.checkForWinner();
         event.target.removeEventListener('click', blockMove);
-        
+
     }
 
     const showActivePlayer = () => {
 
-       GameController.getPlayers().forEach(player => {
-        let activePlayer = GameController.getActivePlayer().getName();
-           if (player.getName() === activePlayer) {
-               const players = document.querySelectorAll('.player')
-               players.forEach(player => {
-                player.classList.remove('active-two');
-                player.classList.remove('active-one');
-                   if (player.value === activePlayer && activePlayer === "Player One") {
-                       player.classList.add('active-one');
-                   }
-                   if (player.value === activePlayer && activePlayer === "Player Two") {
-                    player.classList.add('active-two');  
-                   }
-               })
-           }
-       })
+        GameController.getPlayers().forEach(player => {
+            let activePlayerName = GameController.getActivePlayer().getName();
+            let activePlayerSymbol = GameController.getActivePlayer().getSymbol();
+
+            if (player.getName() === activePlayerName) {
+                const players = document.querySelectorAll('.player')
+                players.forEach(player => {
+                    player.classList.remove('active-two');
+                    player.classList.remove('active-one');
+                    if (player.value === activePlayerName && activePlayerSymbol === 'x') {
+                        player.classList.add('active-one');
+                    }
+                    if (player.value === activePlayerName && activePlayerSymbol === 'o') {
+                        player.classList.add('active-two');
+                    }
+                })
+            }
+        })
     }
 
     const gameOverScreen = (player) => {
-        const gameOver = document.querySelector('.gameover');
-        const gameOverTitle = document.createElement('h1');
-        const playerWins = document.createElement('p');
+        const gameOver = document.querySelector('.gameover')
+        const gameOverTitle = document.querySelector('#gameovertitle');
+        const playerWins = document.querySelector('#player-wins');
+        const rematch = document.querySelector('#rematch');
+        const newNames = document.querySelector('#new-names');
         gameOverTitle.textContent = "Game Over!";
-        playerWins.textContent = `${player} wins!`
-        gameOver.appendChild(gameOverTitle);
-        gameOver.appendChild(playerWins);
+        playerWins.textContent = `${player}`
+        rematch.textContent = "Rematch?";
+        newNames.textContent = "New Names?";
         gameOver.classList.remove('hidden');
-    }
+        removeBlockListener();
+
+        rematch.addEventListener('click', () => {
+            GameController.resetWinnerFound();
+            Gameboard.clear();
+            deleteGrid();
+            createGrid();
+            displayPlayers();
+            addBlockListener();
+            deletePlayerDisplay();
+            displayPlayers();
+            blockHightlight();
+            showActivePlayer();
+            gameOver.classList.add('hidden');
+            controls.classList.remove("hidden");
+        });
+
+        newNames.addEventListener('click', () => {
+      buttonInit();      
+      playerInput.classList.remove("hidden");
+      gameOver.classList.add('hidden');
+    })}
 
     return { createGrid, deleteGrid, buttonInit, displayPlayers, deletePlayerDisplay, updateGrid, gameOverScreen }
 })();
