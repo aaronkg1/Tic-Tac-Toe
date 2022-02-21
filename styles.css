@@ -141,18 +141,6 @@ h1 {
 
 }
 
-.player-one-input {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 3em;
-    gap: 20px;
-    grid-column: 4 / 13;
-    grid-row: 3 / 13;
-    z-index: 3;
-    background-color: var(--main-color);
-}
 
 .block {
     display: flex;
@@ -221,6 +209,7 @@ button {
     grid-row: 3 / 13;
     z-index: 5;
     background-color: var(--main-color);
+    font-family: 'Gideon Roman', cursive;
     
 }
 
@@ -232,9 +221,11 @@ button {
 .player-input input {
     outline: none;
     border-radius: 10px;
-    padding-right: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
     font-size: 1em;
     max-width: 200px;
+    font-family: 'Gideon Roman', cursive;
     
 }
 
