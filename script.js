@@ -14,19 +14,20 @@ const Gameboard = (() => {
     const getMoves = () => {
         return moves;
     }
+
     const clear = () => {
         gameboard.splice(0, 3);
         gameboard.push([1, 2, 3], [4, 5, 6], [7, 8, 9]);
         moves = 0;
     }
-    return { getBoard, move, clear, getMoves }
+
+    return { getBoard, move, clear, getMoves, }
 
 })();
 
 const GameController = (() => {
     let players = []
     let activePlayer;
-    let winnerFound = false;
     let isAIActive = false;
     const createPlayer = (name, symbol) => {
         players.push(Player(name, symbol));
@@ -35,30 +36,53 @@ const GameController = (() => {
         players.splice(0, 2);
     }
     const getPlayers = () => players;
-    const checkForWinner = () => {
-        let gameboard = Gameboard.getBoard();
+    const checkForWinner = (gameboard) => {
+        let winnerFound = false;
         for (let i = 0; i <= 2; i++) {
             if (gameboard[0][i] == gameboard[1][i] && gameboard[1][i] == gameboard[2][i]) { //check vertical
-                gameOver(gameboard[0][i]);
                 winnerFound = true;
+                if (gameboard[0][i] == 'x') {
+                
+                    return 10;
+                }
+                else {
+                    return -10;
+                };
             }
-            if (gameboard[i][0] === gameboard[i][1] && gameboard[i][1] === gameboard[i][2]) { //check horizontal
-                gameOver(gameboard[i][0]);
+            if (gameboard[i][0] == gameboard[i][1] && gameboard[i][1] == gameboard[i][2]) { //check horizontal
                 winnerFound = true;
+                if (gameboard[i][0] == 'x') {
+                    return 10;
+                }
+                else { 
+                    return -10
+                };
             }
             if (gameboard[0][0] === gameboard[1][1] && gameboard[1][1] === gameboard[2][2]) { //check diaganol
-                gameOver(gameboard[0][0]);
                 winnerFound = true;
+                if (gameboard[0][0] == 'x') {
+                    return 10;
+                }
+                else {
+                    return -10
+                };
             }
             if (gameboard[0][2] === gameboard[1][1] && gameboard[1][1] === gameboard[2][0]) { //check diaganol
-                gameOver(gameboard[0][2]);
                 winnerFound = true;
+                if (gameboard[0][2] == 'x') {
+                    return 10;
+                }
+                else {
+                    return -10
+                }
+            }
+            else if (winnerFound = false) {
+                return 0;
             }
         }
-        if (winnerFound === false && Gameboard.getMoves() === 9) {
-            gameOver('draw');
+        return 0;
+
         }
-    }
     const setActivePlayer = (index) => {
         activePlayer = players[index];
     }
@@ -81,41 +105,107 @@ const GameController = (() => {
             }
         })
     }
-    const resetWinnerFound = () => {
-        if (winnerFound === true) {
-            winnerFound = false;
-        }
-    }
 
     const activateAI = () => {
-            isAIActive = true;
-        }
+        isAIActive = true;
+    }
 
     const deactivateAI = () => {
-            isAIActive = false;
-        }
-    
-
+        isAIActive = false;
+    }
     const getAIState = () => {
         return isAIActive;
     }
-
-    const isThereAWinner = () => winnerFound;
-
-    return { checkForWinner, createPlayer, getPlayers, removePlayers, setActivePlayer, getActivePlayer, changeActivePlayer, resetWinnerFound, activateAI, deactivateAI, getAIState, isThereAWinner}
+    const minimax = (board, depth, isMax) => {   
+        let score = checkForWinner(board);
+        if (score == 10) {
+            return score - depth; 
+        }
+        if (score == -10) {
+            return score + depth;            
+        }
+        if (isFull(board)) {
+            return 0;
+        }
+        if (isMax) {
+            let best = -10000;
+            for (let i = 0; i <= 2; i++) {
+                for (let j = 0; j <= 2; j++) {
+                   {
+                    if (board[i][j] != 'x' && board[i][j] != 'o') {
+                        const originalValue = board[i][j];
+                        board[i][j] = 'o';
+                        best = Math.max(best, minimax(board, depth + 1,!isMax));
+                        board[i][j] = originalValue;                               
+                    }
+                }
+                }
+            }
+            return best;
+        }
+        else {
+            let best = 10000;
+            for (let i = 0; i <= 2; i++) {
+                for (let j = 0; j <= 2; j++) {
+                    if (depth > 9) {
+                        return
+                    }
+                    else {
+                    if (board[i][j] != 'x' && board[i][j] != 'o') {
+                        const originalValue = board[i][j];
+                        board[i][j] = 'x';
+                        best = Math.min(best, minimax(board ,depth + 1 ,!isMax));
+                        board[i][j] = originalValue;   
+                    }
+                }
+                }
+            }
+            return best;
+        }
+    }
+    const findBestMove = () => {
+        let board = Gameboard.getBoard();
+        let bestVal = -10000;
+        for (let i = 0; i <= 2; i++) {
+            for (let j = 0; j <= 2; j++) {
+                const originalValue = board[i][j];
+                if (board[i][j] != 'x' && board[i][j] != 'o') {
+                    board[i][j] = 'x';
+                    let moveVal = minimax(board ,0 , false);
+                    board[i][j] = originalValue;
+                    if (moveVal > bestVal) {
+                        bestRow = i;
+                        bestCol = j;
+                        bestVal = moveVal;
+                    }
+                }
+            }
+        }
+        return [bestRow, bestCol];
+    }
+    const isFull = (board) => {
+       for (let i=0; i<3; i++) {
+           for (let j=0; j<3; j++) {
+               if (board[i][j] != 'x' || board[i][j] != 'o') {
+                   return false;
+               }
+               else return true;
+           }
+       }  
+    }
+    return { checkForWinner, createPlayer, getPlayers, removePlayers, setActivePlayer, getActivePlayer, changeActivePlayer, activateAI, deactivateAI, getAIState, findBestMove, gameOver }
 })();
 
 const Player = (name, symbol) => { // player contructor
+    const score = 0;
     const getName = () => name;
     const setSymbol = (symbol) => this.symbol = symbol;
     const getSymbol = () => symbol;
-    let setPosition = (x, y) => {
-        return [x, y];
-    }
+    const setScore = (score) => score += 10;
+    const getScore = () => score;
 
-    return { getName, setSymbol, setPosition, getSymbol, }
+    return { getName, setSymbol, getSymbol, setScore, getScore }
 }
-
 const displayController = (() => { //Module controlling DOM manipulation
 
     const playerInput = document.querySelector(".player-input");
@@ -124,44 +214,34 @@ const displayController = (() => { //Module controlling DOM manipulation
     const playButton = document.querySelector('#play');
     const newGameBtn = document.querySelector("#new-game");
     const controls = document.querySelector(".controls");
-    const computerOrPlayer= document.querySelector(".player-or-computer");
+    const computerOrPlayer = document.querySelector(".player-or-computer");
     const versusComputerWindow = document.querySelector('.versus-computer');
     const versusPlayer = document.querySelector('#vs-player-btn');
     const versusComputer = document.querySelector('#vs-computer-btn');
     const onePlayerName = document.querySelector('#one-player-name');
     const playComputerButton = document.querySelector('#play-comp');
-    
+
     const buttonInit = () => {
 
-        
+
         newGameBtn.addEventListener('click', () => {
             newGameBtn.classList.add('hidden');
             computerOrPlayer.classList.remove('hidden');
         })
-    
+
         versusPlayer.addEventListener("click", Gameboard.clear());
         versusPlayer.addEventListener("click", deleteGrid());
         versusPlayer.addEventListener("click", createGrid());
         versusPlayer.addEventListener("click", GameController.removePlayers());
         versusPlayer.addEventListener("click", () => {
+            GameController.deactivateAI();
             controls.classList.add("hidden");
             computerOrPlayer.classList.add("hidden");
             playerInput.classList.remove("hidden");
         });
-       
+
         playButton.addEventListener('click', createPlayer);
         playButton.addEventListener('click', showActivePlayer);
-        // playButton.addEventListener('click', () => {
-        //     removePlayers()
-        //     createPlayer()
-        //     showActivePlayer
-        //     playerInput.classList.add('hidden');
-        //     GameController.deactivateAI();
-        //     Gameboard.clear();
-        //     deleteGrid();
-        //     createGrid()
-        // })
-        
 
         versusComputer.addEventListener('click', GameController.activateAI);
         versusComputer.addEventListener("click", Gameboard.clear());
@@ -188,40 +268,36 @@ const displayController = (() => { //Module controlling DOM manipulation
     const createPlayer = () => { //Creates players within Gamecontroller using input values
 
         if (GameController.getAIState() === false) {
-
-        if (playerOneX.value === playerTwoO.value) {
-            alert('Players must have different names');
+            if (playerOneX.value === playerTwoO.value) {
+                alert('Players must have different names');
+            }
+            else {
+                GameController.removePlayers();
+                GameController.createPlayer(playerOneX.value, 'x');
+                GameController.createPlayer(playerTwoO.value, 'o');
+                GameController.setActivePlayer(0);
+                playerInput.classList.add('hidden');
+                addBlockListener();
+                deletePlayerDisplay();
+                displayPlayers();
+                blockHightlight();
+                controls.classList.remove("hidden");
+            }
         }
-        else {
-
+        else if (GameController.getAIState() === true) {
             GameController.removePlayers();
-            GameController.createPlayer(playerOneX.value, 'x');
-            GameController.createPlayer(playerTwoO.value, 'o');
+            GameController.createPlayer(onePlayerName.value, 'x');
+            GameController.createPlayer('Computer', 'o');
             GameController.setActivePlayer(0);
-            playerInput.classList.add('hidden');
+            versusComputerWindow.classList.add('.hidden');
             addBlockListener();
             deletePlayerDisplay();
             displayPlayers();
             blockHightlight();
             controls.classList.remove("hidden");
+
         }
     }
-
-    else if (GameController.getAIState() === true) {
-        GameController.removePlayers();
-        GameController.createPlayer(onePlayerName.value, 'x');
-        GameController.createPlayer('Computer', 'o');
-        GameController.setActivePlayer(0);
-        versusComputerWindow.classList.add('.hidden');
-        addBlockListener();
-        deletePlayerDisplay();
-        displayPlayers();
-        blockHightlight();
-        controls.classList.remove("hidden");
-        
-    }
-}
-
     const createGrid = () => {
 
         const gameContainer = document.querySelector("#game-grid");
@@ -325,58 +401,92 @@ const displayController = (() => { //Module controlling DOM manipulation
         })
     }
     const blockMove = (event) => {
-        if (GameController.getAIState() === false) {
+        const blocks = document.querySelectorAll(".block");
         let activeSymbol = GameController.getActivePlayer().getSymbol();
-        Gameboard.move(event.target.value, activeSymbol);
-        event.target.value = activeSymbol;
-        event.target.classList.remove('empty');
-        GameController.changeActivePlayer();
-        updateGrid();
-        showActivePlayer();
-        GameController.checkForWinner();
-        event.target.removeEventListener('click', blockMove);
+        if (GameController.getAIState() === false) {      
+            Gameboard.move(event.target.value, activeSymbol);
+            event.target.value = activeSymbol;
+            event.target.classList.remove('empty');
+            GameController.changeActivePlayer();
+            updateGrid();
+            showActivePlayer();
+            if (GameController.checkForWinner(Gameboard.getBoard()) > 0) {
+                GameController.gameOver('x');
+            }
+            else if (GameController.checkForWinner(Gameboard.getBoard()) < 0) {
+                GameController.gameOver('o');
+            }
+            else if (GameController.checkForWinner(Gameboard.getBoard()) == 0 && Gameboard.getMoves() == 9) {
+                GameController.gameOver('draw');
+            }
+            event.target.removeEventListener('click', blockMove);
+        }
+        else if (GameController.getAIState() === true) {
+            Gameboard.move(event.target.value, 'x');
+            event.target.value = 'x';
+            updateGrid();
+            showActivePlayer();
+            if (GameController.checkForWinner(Gameboard.getBoard()) > 0) {
+                GameController.gameOver('x');
+            }
+            else if (GameController.checkForWinner(Gameboard.getBoard()) < 0) {
+                GameController.gameOver('o');
+            }
+            else if (GameController.checkForWinner(Gameboard.getBoard()) == 0 && Gameboard.getMoves() == 9) {
+                GameController.gameOver('draw');
+            }
+            
+            else {
+            GameController.changeActivePlayer();
+            showActivePlayer();
+            for (let i = 0; i <= 8; i++) {      
+                if (blocks[i].value.toString() === GameController.findBestMove().toString()) {
+                    blocks[i].value = 'o';
+                    blocks[i].removeEventListener('click', blockMove);
+                    blocks[i].classList.remove('empty');
+                }
+            }    
+            Gameboard.move(GameController.findBestMove(), 'o');
+            updateGrid();
+            GameController.changeActivePlayer(); 
+            showActivePlayer();
+
+            if (GameController.checkForWinner(Gameboard.getBoard()) > 0) {
+                GameController.gameOver('x');
+            }
+            if (GameController.checkForWinner(Gameboard.getBoard()) < 0) {
+                GameController.gameOver('o');
+            }
+            if (GameController.checkForWinner(Gameboard.getBoard()) == 0 && Gameboard.getMoves() == 9) {
+                GameController.gameOver('draw');
+            }
+        }
+        }
     }
-    else if (GameController.getAIState() === true) {
-        let activeSymbol = GameController.getActivePlayer().getSymbol();
-        Gameboard.move(event.target.value, activeSymbol);
-        event.target.value = activeSymbol;
-        updateGrid();
-        showActivePlayer();
-        GameController.checkForWinner();
-        event.target.removeEventListener('click', blockMove);
-        GameController.changeActivePlayer();
-        activeSymbol = GameController.getActivePlayer().getSymbol();
-        showActivePlayer();
-        setTimeout(AIBlockmove, 200);
-        
-    }
-    }
-    
     const AIBlockmove = () => {
         let activeSymbol = GameController.getActivePlayer().getSymbol();
-        
-        const random = Math.floor(Math.random() * 9); 
-        const blocks = document.querySelectorAll(".block")
+
+        const random = Math.floor(Math.random() * 9);
+        const blocks = document.querySelectorAll(".block");
         const blocksArray = Array.from(blocks);
         if (GameController.isThereAWinner() === false && Gameboard.getMoves() < 9) {
 
-       if (blocks[random].value === "o" || blocks[random].value === "x") {
-        AIBlockmove();
-           
-       }
-       else {
-        Gameboard.move(blocksArray[random].value, activeSymbol);
-        blocks[random].removeEventListener('click', blockMove);
-        blocks[random].classList.remove('empty');
-        blocks[random].value = activeSymbol;
-        updateGrid();
-        GameController.changeActivePlayer();
-        showActivePlayer();
-        GameController.checkForWinner();
-        blockHightlight();
-       } 
+            if (blocks[random].value === "o" || blocks[random].value === "x") {
+                AIBlockmove();
+            }
+            else {
+                Gameboard.move(blocksArray[random].value, activeSymbol);
+                blocks[random].removeEventListener('click', blockMove);
+                blocks[random].classList.remove('empty');
+                blocks[random].value = activeSymbol;
+                updateGrid();
+                GameController.changeActivePlayer();
+                showActivePlayer();
+                GameController.checkForWinner(Gameboard.getBoard());
+                blockHightlight();
+            }
+        }
     }
-}
     const showActivePlayer = () => {
         GameController.getPlayers().forEach(player => {
             let activePlayerName = GameController.getActivePlayer().getName();
@@ -409,7 +519,6 @@ const displayController = (() => { //Module controlling DOM manipulation
         gameOver.classList.remove('hidden');
         removeBlockListener();
         rematch.addEventListener('click', () => {
-            GameController.resetWinnerFound();
             Gameboard.clear();
             deleteGrid();
             createGrid();
@@ -424,11 +533,11 @@ const displayController = (() => { //Module controlling DOM manipulation
             controls.classList.remove("hidden");
         });
         newNames.addEventListener('click', () => {
-      buttonInit();      
-      playerInput.classList.remove("hidden");
-      gameOver.classList.add('hidden');
-    })}
-
+            buttonInit();
+            playerInput.classList.remove("hidden");
+            gameOver.classList.add('hidden');
+        })
+    }
     return { createGrid, deleteGrid, buttonInit, displayPlayers, deletePlayerDisplay, updateGrid, gameOverScreen, AIBlockmove }
 })();
 

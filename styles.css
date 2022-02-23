@@ -236,7 +236,7 @@ button {
     padding-right: 10px;
 }
 
-.player-input input {
+.player-input input, .versus-computer input {
     outline: none;
     border-radius: 10px;
     padding-left: 20px;
